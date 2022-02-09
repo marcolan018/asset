@@ -1,0 +1,83 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: vector
+  namespace: open-cluster-management-observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vector
+  template:
+    metadata:
+      labels:
+        app: vector
+    spec:
+      containers:
+        - name: vector
+          image: >-
+            timberio/vector:nightly-alpine
+          ports:
+            - name: http
+              containerPort: 9090
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              readOnly: true
+              mountPath: /etc/vector/vector.toml
+              subPath: vector.toml
+      volumes:
+        - name: config
+          configMap:
+            name: vector-config
+            defaultMode: 420
+
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: vector
+  namespace: open-cluster-management-observability
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9090
+      targetPort: http
+  type: ClusterIP
+  selector:
+    app: vector
+
+---
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: vector-config
+  namespace: open-cluster-management-observability
+data:
+  vector.toml: |-
+    [sources.in]
+    type = "prometheus_remote_write"
+    address = "0.0.0.0:9090"
+
+    [transforms.my_transform]
+    type = "filter"
+    inputs = [ "in" ]
+    condition = '.name == "cluster:kube_pod_container_resource_requests:memory:sum"'
+
+    [sinks.kafka]
+    type = "kafka"
+    inputs = [ "my_transform" ]
+    bootstrap_servers = "my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+    topic = "my-topic-1"
+    compression = "none"
+    encoding.codec = "text"
+
+    [sinks.victoriametrics]
+    type = "prometheus_remote_write"
+    inputs = [ "my_transform" ]
+    endpoint = "http://victoriametrics:8428/api/v1/write"
+
+
