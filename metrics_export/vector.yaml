@@ -62,22 +62,17 @@ data:
     type = "prometheus_remote_write"
     address = "0.0.0.0:9090"
 
-    [transforms.my_transform]
-    type = "filter"
-    inputs = [ "in" ]
-    condition = '.name == "cluster:kube_pod_container_resource_requests:memory:sum"'
-
     [sinks.kafka]
     type = "kafka"
-    inputs = [ "my_transform" ]
+    inputs = [ "in" ]
     bootstrap_servers = "my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
-    topic = "my-topic-1"
+    topic = "my-topic"
     compression = "none"
     encoding.codec = "text"
 
     [sinks.victoriametrics]
     type = "prometheus_remote_write"
-    inputs = [ "my_transform" ]
+    inputs = [ "in" ]
     endpoint = "http://victoriametrics:8428/api/v1/write"
 
 
