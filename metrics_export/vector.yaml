@@ -70,9 +70,5 @@ data:
     compression = "none"
     encoding.codec = "text"
 
-    [sinks.victoriametrics]
-    type = "prometheus_remote_write"
-    inputs = [ "in" ]
-    endpoint = "http://victoriametrics:8428/api/v1/write"
 
 

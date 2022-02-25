@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vector
+  namespace: open-cluster-management-observability
+type: Opaque
+stringData:
+  ep.yaml: |
+    url: http://vector:9090
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: victoriametrics
+  namespace: open-cluster-management-observability
+type: Opaque
+stringData:
+  ep.yaml: |
+    url: http://victoriametrics:8428/api/v1/write
