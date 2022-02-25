@@ -1,0 +1,65 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: victoriametrics
+  namespace: open-cluster-management-observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: victoriametrics
+  template:
+    metadata:
+      labels:
+        app: victoriametrics
+    spec:
+      containers:
+        - name: victoriametrics
+          image: >-
+            victoriametrics/victoria-metrics
+          args:
+            - '--tls'
+            - '--tlsCertFile=/var/run/certs/tls.crt'
+            - '--tlsKeyFile=/var/run/certs/tls.key'
+          ports:
+            - name: https
+              containerPort: 8428
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /victoria-metrics-data
+            - name: certs
+              mountPath: /var/run/certs
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: certs
+          secret:
+            secretName: victoriametrics-server-certs
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: victoriametrics
+  namespace: open-cluster-management-observability
+spec:
+  ports:
+    - name: https
+      protocol: TCP
+      port: 8428
+      targetPort: https
+  type: ClusterIP
+  selector:
+    app: victoriametrics
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: victoriametrics-server-certs
+  namespace: open-cluster-management-observability
+type: Opaque
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURYakNDQWthZ0F3SUJBZ0lRRytTaUhyVmd1Sk1UN2NyYzZqa0xuekFOQmdrcWhraUc5dzBCQVFzRkFEQXkKTVFzd0NRWURWUVFHRXdKVlV6RVdNQlFHQTFVRUNoTU5VbVZrSUVoaGRDd2dTVzVqTGpFTE1Ba0dBMVVFQXhNQwpZMkV3SGhjTk1qSXdNakkxTWpJd01UQXdXaGNOTWpNd01qSTFNakl3TVRBd1dqQTJNUXN3Q1FZRFZRUUdFd0pWClV6RVdNQlFHQTFVRUNoTU5VbVZrSUVoaGRDd2dTVzVqTGpFUE1BMEdBMVVFQXhNR2MyVnlkbVZ5TUlJQklqQU4KQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBeUgxVG1qeUJqMUZ3SHg0ZVdiMHFiSmxwQVV4OApSV0xWZDAvQllSaThOZ2l1cVNCQThHQnlYNUJqdlFMUWJuTno4VWszYXZKNlNweWp4N1RSd2w2WmRUOU9sUVJHClZ2VXF3Wi9HVFVtUXhpOVoxRWoxdlYxbS8rMmVHdDI5ZGpSRkpzUUN1WHdnL2RzTXBkYXVsaDEvZUpZL0hvSWUKbTVpVjN6aXZiS1BlTEdWTFE5UWpkdHFLYlE0T3FHUEppM3dCeWZSZzJ2ZnB4UG16RWtoUjAyanFzakhlRDV0SgpLQUtSVzBFMnpxMmhVK1ZJbXZKeC9VN2NtME9vWGdRbFNSTC9uRGVmdG5raG1LM1ZoOWRDVnZTSjJzbkV4cmVMCnB3VlM4Tlc5YkdLYWl2NFVrRUc1QnBLTnMrSVhJVG84L0JYaU5Hci9ORU8xbjF4WFIzY1RaWmV5ZFFJREFRQUIKbzJ3d2FqQU9CZ05WSFE4QkFmOEVCQU1DQmFBd0V3WURWUjBsQkF3d0NnWUlLd1lCQlFVSEF3RXdId1lEVlIwagpCQmd3Rm9BVWRWTDBhcDNCdExqbCtaaDRqb3FQdW42MU51RXdJZ1lEVlIwUkJCc3dHWUlHYzJWeWRtVnlnZzkyCmFXTjBiM0pwWVcxbGRISnBZM013RFFZSktvWklodmNOQVFFTEJRQURnZ0VCQUxPMzFrWlRkNFg5RHA4RVZFcGcKZXZiZjBlTTVVMVZLYU9qeDNUQ2VXY0M2MkhIRWlKc0h5c0pURlN0TERRaXZVVXF6OUpJY1BSMW9pTDlDckZ4VworaTkxbVpMVC9DdUE5VCtDZFd3OUtCZWpzQjhvMmpzNUhoNmhHemtCYTZaaVBKNW5WVDgxamd4c2o1cUd2L2hBCkFVK3d3S24vN3g1ZWJheU8xMDBtMVE5RGNxelFIaVhKZ3RNeTcrSmFTNHJ2ZHA1K0FTdk9YUFhXR2tFN05jNGMKNExVQldOSk1kbUYzZXZYUzBreVhrRXJFUXhvekNnSFFsV3FDdUk3bC8vSWt4T3Rwb0ZONTVkOTZld1MxVlUrWQpzQXpvQmVMbzA3ZGEyM091ZzJwSjBNZksrUWM5amsvTk01aUp4MnNZTDUzTi9aSzJHeFNSU25qWUJ1bUZLUElsCjFkST0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBeUgxVG1qeUJqMUZ3SHg0ZVdiMHFiSmxwQVV4OFJXTFZkMC9CWVJpOE5naXVxU0JBCjhHQnlYNUJqdlFMUWJuTno4VWszYXZKNlNweWp4N1RSd2w2WmRUOU9sUVJHVnZVcXdaL0dUVW1ReGk5WjFFajEKdlYxbS8rMmVHdDI5ZGpSRkpzUUN1WHdnL2RzTXBkYXVsaDEvZUpZL0hvSWVtNWlWM3ppdmJLUGVMR1ZMUTlRagpkdHFLYlE0T3FHUEppM3dCeWZSZzJ2ZnB4UG16RWtoUjAyanFzakhlRDV0SktBS1JXMEUyenEyaFUrVkltdkp4Ci9VN2NtME9vWGdRbFNSTC9uRGVmdG5raG1LM1ZoOWRDVnZTSjJzbkV4cmVMcHdWUzhOVzliR0thaXY0VWtFRzUKQnBLTnMrSVhJVG84L0JYaU5Hci9ORU8xbjF4WFIzY1RaWmV5ZFFJREFRQUJBb0lCQUQzbkRFZ2tCSERHMlZLUwpUeGF3SklneGVjMXYyekxsU0RtMWcyVENhV0pabmV3VVRGaXJ2c1NvNVZLM3FybGZwbDNLbUhUSjkxNVFMUFY5CmJBS1NpTms5dWJxaS9rRGRJOTF5d3B5Y2FUbjM1c2wzMllBbGRhYnhyQTVwaHBVWG9INU9xUFN5VWRGdnIrRUkKZnhGVWZFWTBSYnJhdkM2WWx6VzczOVl3Wm1uWU5NL3ZEakR2Y2FMUHdKOTJGR0FqRVZQK1gzbktwWnJPOGJHNgo4UjNXNzJDaHo0MHJkMUNoR3lWOHp2MHEydEdoWnhBa0U5dE40Ykk4Y29pSVlFVU96Z0xPNnR0dk52d3N5MHh5CktvZGY5L1EwYUw5ellIcXBwUUxmMS92c2VacnZzNGVjZEZBWmh6MTJwMGhocTdMcHRNL2l6TStGbUNxZncvb1QKUUVtNnZVRUNnWUVBNW84di9GK0lPMVVndHpGN3VZZ01OaFZBT2tkZnNJRWhDeXNVN0NOWk5CNFFadnNoWVprbAp3U0gwc0tkSUhsS3BZWHlDSDBhU0VSN3UrVWZNbGJMcEVubHpZQlY2b0FCeFk5QjJ3SXNxWFc0aU1pMEFRY3VVCktlQ2QxK2ZUaVZHbkhzR1lFVlZiSGJwSUtxMGQ3OWF3aXd1Qk14V2JCYVhmMkNoNlRTZnBVOFVDZ1lFQTNweTcKV290VGlxUGZFLzM5R3BNV1RvN1hqazJIcUhid0t4b0oyaVZxSkd4UWhwMjN3RFlPczFJVlh1d2dmN0pabks4awpvVS9TZERjV2taakVkaUJuY3UyKzVya3gvZTFiYnh0cS9zd1REY1NkWTVDRVVTNk1FdTM1Rlp2SDZtNEVHY0lwCjA2bE1mMkpyUk1qcHdobXpiWlZLSkNUTlo5STNweW9oWHNEUDN2RUNnWUJQYjc0a3dmVjZHOVp0eDhyTkhhYTMKYTVMNWdXWGl0bHJnTWpPL09GNmZxa3dVYnlvTkttcnJvL3RlY2dSVERqLzFxcVJhaWtJQlRCc2lJQzdJMVIrZwprZC9DbHlQc3hMcE1uYUtNckdZb1VxM05nOXUyejZGNDNEOEdDSVhGcGpCaVZHbEViNWc1SWRtRGVxbjUzSXB2CkhjT2lDaXVqUW9kaFBuRUU3RjlqMFFLQmdRQ25qRE4vRElwT09OUjN5WnlzV2JSYVlDeGhFSDFnRUZUbk8rdmEKWW5xbSsxY0lXc0NvVElkMzgvbmR2YjhnSFc1US9ZbUdWL3ZBT0k0bCsyTXl2V1RmSFkyblBoQWdYSHVLL29uagpTRm0yN1JyQWkwN3JneXN1UENwVFZ6SjZnVjlZdThpYlpEc05UVmdMSjJTNUVIcjVxWGxxQnNFS3VTL21BMUdtCmJWeUhJUUtCZ1FEVjBMNnhDTSsybnc2SlJVWlA2dEphcUlHcHBjUEFWTmNwUEx0ZDNoc0x6YU5sdGR2RUJZUmQKZFFhNitRaEM5VzkrK0xqb1oxWk5rbTBMaEhYK3JYOHdOMGUzYVA3MzcwbTBqYmM5UllpaGFTQ2VmWklNbXVRegowMzNYaGF4RHc4QU1IZXlJK3hUZDRaZzVxSWppSDVySXhtVEQrSnI4Q0FkekVHcFdRSDhaMGc9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
