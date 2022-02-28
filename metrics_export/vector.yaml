@@ -65,7 +65,7 @@ data:
     [sinks.kafka]
     type = "kafka"
     inputs = [ "in" ]
-    bootstrap_servers = "my-cluster-kafka-bootstrap.kafka.svc.cluster.local:9092"
+    bootstrap_servers = "my-cluster-kafka-bootstrap.my-kafka-project.svc.cluster.local:9092"
     topic = "my-topic"
     compression = "none"
     encoding.codec = "text"
