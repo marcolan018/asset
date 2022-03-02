@@ -13,6 +13,8 @@ spec:
       labels:
         app: victoriametrics
     spec:
+      securityContext:
+        fsGroup: 1000700000
       containers:
         - name: victoriametrics
           image: >-
@@ -26,7 +28,24 @@ spec:
               mountPath: /victoria-metrics-data
       volumes:
         - name: data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: victoriametrics
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: victoriametrics
+  namespace: open-cluster-management-observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp2
+  volumeMode: Filesystem
 
 ---
 kind: Service
