@@ -19,11 +19,12 @@ type: Opaque
 stringData:
   ep.yaml: |
     url: https://victoriametrics:8428/api/v1/write
-    tlsConfig:
-      secretName: victoriametrics-client-certs
-      caKey: ca.crt
-      certKey: tls.crt
-      keyKey: tls.key
+    http_client_config:
+      tls_config:
+        secret_name: victoriametrics-client-certs
+        ca_file_key: ca.crt
+        cert_file_key: tls.crt
+        key_file_key: tls.key
 
 
 ---

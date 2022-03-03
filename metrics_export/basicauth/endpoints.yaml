@@ -19,6 +19,7 @@ type: Opaque
 stringData:
   ep.yaml: |
     url: http://victoriametrics:8428/api/v1/write
-    basicAuth:
-      user: test
-      password: test
+    http_client_config:
+      basic_auth:
+        username: test
+        password: test
