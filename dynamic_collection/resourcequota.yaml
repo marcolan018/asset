@@ -1,13 +1,13 @@
 kind: ResourceQuota
 apiVersion: v1
 metadata:
-  name: observability
-  namespace: open-cluster-management-observability
+  name: test
+  namespace: test
 spec:
   hard:
-    limits.cpu: '500'
-    limits.memory: 600Gi
+    limits.cpu: 5000m
+    limits.memory: 5.5Gi
     pods: '100'
-    requests.cpu: '1'
+    requests.cpu: 1000m
     requests.memory: 1Gi
 
