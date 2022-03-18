@@ -1,0 +1,22 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: observability-metrics-custom-allowlist
+  namespace: open-cluster-management-observability
+data:
+  metrics_list.yaml: |
+    names:
+      - -container_cpu_cfs_periods_total
+      - -container_cpu_cfs_throttled_periods_total
+      - -kube_pod_container_resource_limits
+      - -kube_pod_container_resource_requests
+      - -kube_resourcequota
+      - -mixin_pod_workload
+      - -namespace_workload_pod:kube_pod_owner:relabel
+      - -node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate
+      - -node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate
+    matches:
+      - -__name__="container_memory_cache",container!=""
+      - -__name__="container_memory_rss",container!=""
+      - -__name__="container_memory_swap",container!=""
+      - -__name__="container_memory_working_set_bytes",container!=""
