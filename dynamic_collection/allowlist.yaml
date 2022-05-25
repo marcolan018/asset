@@ -6,4 +6,4 @@ metadata:
 data:
   metrics_list.yaml: |
     collect_rules:
-      - name: -SNOResourceUsage    
+      - group: -SNOResourceUsage    
